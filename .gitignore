@@ -236,3 +236,11 @@ tests/tiny/tiny010.tww
 .idea/modules.xml
 .idea/PACE2023.iml
 .idea/vcs.xml
+tests/heuristic/heuristic_002.tww
+tests/heuristic/heuristic_188.tww
+tests/heuristic/heuristic_190.tww
+tests/heuristic/heuristic_192.tww
+tests/heuristic/heuristic_194.tww
+tests/heuristic/heuristic_196.tww
+tests/heuristic/heuristic_198.tww
+tests/heuristic/heuristic_200.tww

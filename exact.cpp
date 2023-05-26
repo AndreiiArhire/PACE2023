@@ -26,6 +26,7 @@ const int PRIME2 = 10000079;
 const int EXIT_CODE = 1;
 std::chrono::time_point<std::chrono::high_resolution_clock> begin_;
 
+static unsigned long long randSeed = 1;
 
 void ckeck_force_stop() {
 	auto end = std::chrono::high_resolution_clock::now();
@@ -36,7 +37,10 @@ void ckeck_force_stop() {
 	}
 }
 
-
+int customRand() {
+	randSeed = (randSeed * 1000000103 + 27082000) % 1000000009;
+	return randSeed;
+}
 
 set<int> all_nodes_set;
 vector<vector<int>> components;
@@ -131,7 +135,7 @@ void clear_data() {
 }
 
 void readData() {
-	string path_input = R"(tests/exact/exact_)";
+	string path_input = "tests//exact//exact_";
 	for (int l = 1; l <= 3 - to_string(testNo).size(); ++l) {
 		path_input.push_back('0');
 	}
@@ -1077,7 +1081,7 @@ vector< pair <int, int> > go_heuristic(int cc, vector< pair <int, int > > sol, i
 		paired[i] = 0;
 		paired2[i] = 0;
 	}
-	for (int i = 0; i < max_pos - 1 - rand() % 3; ++i) {
+	for (int i = 0; i < max_pos - 1 - customRand() % 3; ++i) {
 		merge_nodes(sol[i]);
 		nodes2.erase(sol[i].second);
 		solution.emplace_back(sol[i]);
@@ -1201,14 +1205,14 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 		return  make_pair(lim, sol);
 	}
 	int l;
+	int equal_ = 0;
 	for (l = 1; l <= 500000 && max_pos != sol.size() && getElapsed() < lower_bound_tl; ++l) {
 		vector<pair <int, int>> sol2 = sol;
-		if (l % 3 == 1) {
 			for (int p = 1; p <= 1; ++p) {
 				for (auto i : components[cc]) {
 					nodes_left.insert(i);
 				}
-				int pos_to_change = rand() % (max_pos + 1);
+				int pos_to_change = customRand() % (max_pos + 1);
 				for (int i = 0; i <= pos_to_change; ++i) {
 					nodes_left.erase(sol2[i].second);
 				}
@@ -1216,65 +1220,12 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 				for (auto i : nodes_left) {
 					lef.emplace_back(i);
 				}
-				int random_el = lef[rand() % lef.size()];
-				nodes_left.clear();
-				sol2[pos_to_change].first = random_el;
-			}
-		}
-		if (l % 3 == 2)
-		{
-			for (int p = 1; p <= 1; ++p) {
-				int pos_to_change = rand() % (max_pos + 1);
-				nodes_left.insert(sol2[pos_to_change].second);
-				for (int i = pos_to_change + 1; i < sol2.size(); ++i) {
-					nodes_left.insert(sol2[i].first);
-					nodes_left.insert(sol2[i].second);
-				}
-				vector<int> lef;
-				for (auto i : nodes_left) {
-					lef.emplace_back(i);
-				}
-				int rand_poz = rand() % lef.size();
-				int random_el = lef[rand_poz];
-				int val = sol2[pos_to_change].second;
-
-				if (sol2[pos_to_change].first == random_el) {
-					continue;
-				}
-				sol2[pos_to_change].second = random_el;
-				for (int i = pos_to_change + 1; i < sol2.size(); ++i) {
-					if (sol2[i].first == random_el) {
-						sol2[i].first = val;
-					}
-					if (sol2[i].second == random_el) {
-						sol2[i].second = val;
-					}
-				}
-				nodes_left = unordered_set<int>();
-			}
-		}
-
-		if (l % 3 == 0)
-		{
-			for (int p = 1; p <= 1; ++p) {
-
-				for (auto i : components[cc]) {
-					nodes_left.insert(i);
-				}
-				int pos_to_change = rand() % (max_pos + 1);
-				for (int i = 0; i <= pos_to_change; ++i) {
-					nodes_left.erase(sol2[i].second);
-				}
-				vector<int> lef;
-				for (auto i : nodes_left) {
-					lef.emplace_back(i);
-				}
-				int random_el = lef[rand() % lef.size()];
+				int random_el = lef[customRand() % lef.size()];
 				nodes_left = unordered_set<int>();
 				sol2[pos_to_change].first = random_el;
 
 				/////////////
-				pos_to_change = rand() % (max_pos + 1);
+				pos_to_change = customRand() % (max_pos + 1);
 				nodes_left.insert(sol2[pos_to_change].second);
 				for (int i = pos_to_change + 1; i < sol2.size(); ++i) {
 					nodes_left.insert(sol2[i].first);
@@ -1284,7 +1235,7 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 				for (auto i : nodes_left) {
 					lef.emplace_back(i);
 				}
-				int rand_poz = rand() % lef.size();
+				int rand_poz = customRand() % lef.size();
 				random_el = lef[rand_poz];
 				int val = sol2[pos_to_change].second;
 
@@ -1302,28 +1253,46 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 				}
 				nodes_left = unordered_set<int>();
 			}
-		}
+		
 		auto sol3 = go_heuristic(cc, sol2, max_pos);
-
 		int new_pos = eval_state(cc, sol2, lim);
 		int new_pos2 = eval_state(cc, sol3, lim);
-		if (new_pos >= max_pos) {
+		if ( new_pos == max_pos )	{
+			equal_++;
+			if ( equal_ == 60 )	{
+				equal_ = 0;
+				sol = sol2;
+			}
+		}
+		/*
+		if ( new_pos2 == max_pos )	{
+			equal_++;
+			if ( equal_ == 30 )	{
+				equal_ = 0;
+				sol = sol3;
+			}
+		}
+		*/
+		if (new_pos > max_pos) {
+			equal_ = 0;
 			sol = sol2;
 			max_pos = new_pos;
 		}
 
 		if (new_pos2 > max_pos) {
+			equal_ = 0;
+			//cout << new_pos2 << '\n';
 			sol = sol3;
 			max_pos = new_pos2;
 		}
 
 	}
-	//cout  << l << ' ' << max_pos * 100 << '\n';
-	if (max_pos == (int) sol.size()) {
+	//cout << l << ' ' << max_pos * 100 << ' ' << getElapsed() << '\n';
+	if (max_pos == (int)sol.size()) {
 		return make_pair(lim, sol);
 
 	}
-	
+
 	return make_pair(-1, sol);
 
 
@@ -1331,7 +1300,7 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 
 void solver() {
 
-	testNo = 26;
+	testNo = 38;
 	readData();
 	split_into_components();
 	int first_comp_representant = 0;
@@ -1401,7 +1370,6 @@ void solver() {
 
 
 signed main() {
-	srand(0);
 	//ios_base::sync_with_stdio(false);
 	//cin.tie();
 	//std::cout.tie();
