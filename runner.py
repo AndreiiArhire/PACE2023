@@ -37,6 +37,7 @@ def call_cpp(test_prefix, test_id):
     process.stdin.flush()
     print('\nTest {} is running..\n'.format(input_file), end="")
     output_lines = process.stdout.readlines()
+    print('Solution has {} lines!\n'.format(len(output_lines)), end="")
     curr_output_test = open(output_file, 'w')
     for line in output_lines:
         tokens = line.strip().split(' ')
@@ -50,9 +51,9 @@ def call_cpp(test_prefix, test_id):
     print("Solution has been verified!\n")
 
 
-os.system("g++ exact.cpp -o exact ")
-#os.system("g++ heuristic.cpp -o heuristic ")
-print("Exact solver has been compiled!\n", end="")
+#os.system("g++ exact.cpp -o exact ")
+os.system("g++ heuristic.cpp -o heuristic ")
+#print("Exact solver has been compiled!\n", end="")
 print("Heuristic solver has been compiled!\n", end="")
 """
 for i in range(1, 11):
@@ -60,15 +61,14 @@ for i in range(1, 11):
     call_cpp(R'tests/tiny/tiny', i)
     os.killpg(os.getpgid(process.pid), signal.SIGTERM)
 """
-
+"""
 for i in range(38, 39, 2):
     process = Popen('./exact', stdin=PIPE, stdout=PIPE, universal_newlines=True, shell=True, preexec_fn=os.setsid)
     call_cpp(R'tests/exact/exact_', i)
     os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+"""
 
-"""
-for i in range(2, 201, 2):
+for i in range(2, 3, 2):
     process = Popen('./heuristic', stdin=PIPE, stdout=PIPE, universal_newlines=True, shell=True, preexec_fn=os.setsid)
-    call_cpp(R'tests/heuristic/heuristic_', 200 - i)
+    call_cpp(R'tests/heuristic/heuristic_', 202 - i)
     os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-"""

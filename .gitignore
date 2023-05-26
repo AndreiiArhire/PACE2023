@@ -244,3 +244,6 @@ tests/heuristic/heuristic_194.tww
 tests/heuristic/heuristic_196.tww
 tests/heuristic/heuristic_198.tww
 tests/heuristic/heuristic_200.tww
+tests/heuristic/heuristic_.tww
+exact
+heuristic
