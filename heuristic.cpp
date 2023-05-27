@@ -375,13 +375,12 @@ void readData() {
 
 	for (int i = 1; i <= n; ++i) {
 		sort(sorted_edges[i].begin(), sorted_edges[i].end());
-		node_hashes[i].resize(sorted_edges[i].size() + 1);
+		node_hashes[i].resize(sorted_edges[i].size());
 		pair <int, int> ret = make_pair(0, 0);
-		node_hashes[i][0] = ret;
 		for (int j = 0; j < sorted_edges[i].size(); ++j) {
 			ret.first = 1ll * (1ll * ret.first + 1ll * sorted_edges[i][j] * hashes[j].first) % MOD1;
 			ret.second = 1ll * (1ll * ret.second + 1ll * sorted_edges[i][j] * hashes[j].second) % MOD2;
-			node_hashes[i][j + 1] = ret;
+			node_hashes[i][j] = ret;
 		}
 	}
 	//in.close();
@@ -704,7 +703,11 @@ vector<int> sorted_nbr;
 void eliminate_duplicates() {
 	for (int i = 1; i <= n; ++i) {
 		all_nodes.insert(i);
-		nodes_hashes.emplace_back(node_hashes[i].back(), i);
+		if (node_hashes[i].size() == 0 )	{
+			nodes_hashes.emplace_back(make_pair(0, 0), i);
+		}	else{
+			nodes_hashes.emplace_back(node_hashes[i].back(), i);
+		}
 	}
 	sort(nodes_hashes.begin(), nodes_hashes.end());
 	int cnt = 0, maxi = 0;
