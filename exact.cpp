@@ -184,6 +184,7 @@ void split_into_components() {
 			components.emplace_back(curr_component);
 		}
 	}
+	sort( components.begin(), components.end(), [] (vector<int> i, vector<int> j){ return i.size() > j.size(); } );
 }
 
 pair <int, vector<pair<int, int>>> get_initial_upper_bound(int cc) {
@@ -1264,15 +1265,6 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 				sol = sol2;
 			}
 		}
-		/*
-		if ( new_pos2 == max_pos )	{
-			equal_++;
-			if ( equal_ == 30 )	{
-				equal_ = 0;
-				sol = sol3;
-			}
-		}
-		*/
 		if (new_pos > max_pos) {
 			equal_ = 0;
 			sol = sol2;
@@ -1281,13 +1273,11 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 
 		if (new_pos2 > max_pos) {
 			equal_ = 0;
-			//cout << new_pos2 << '\n';
 			sol = sol3;
 			max_pos = new_pos2;
 		}
 
 	}
-	//cout << l << ' ' << max_pos * 100 << ' ' << getElapsed() << '\n';
 	if (max_pos == (int)sol.size()) {
 		return make_pair(lim, sol);
 
@@ -1298,53 +1288,87 @@ pair <int, vector<pair <int, int>>> find_heuristic_upper_bound(int cc, vector<pa
 
 }
 
+
+struct conex_comp {
+	vector<int> nodes;
+	vector<pair<int ,int>> upper_bound_operations;
+	int best_red_degree = 0;
+	int lowerbound = 0;
+};
+
+vector<conex_comp> conn;
+
+int global_degree;
+int global_upperbound;
+int global_lowerbound;
 void solver() {
 
-	testNo = 38;
+	testNo = 138;
 	readData();
 	split_into_components();
 	int first_comp_representant = 0;
-	for (int cc = 0; cc < components.size(); ++cc) {
-		LOWER_BOUND = -1;
+	/* Initial Upperbound */
+	for ( int cc = 0; cc < components.size(); ++ cc )	{
+		conex_comp act;
 		auto sol = reduce_component(cc);
 		for (auto it : sol) {
 			best_solution_all_graph.emplace_back(it);
 		}
-		best_red_degree = 1000000000;
-		best_solution = vector< pair <int, int> >();
+		act.nodes = components[cc];
+		best_red_degree = 1e9;
+		best_solution = vector<pair<int ,int>>();
 		auto upperbound = get_initial_upper_bound(cc);
-		lower_bound_tl = 5 * 60;
-		for (int best_degree = upperbound.first - 1; best_degree >= 0 && getElapsed() < lower_bound_tl; best_degree--) {
-			auto new_sol = find_heuristic_upper_bound(cc, upperbound.second, upperbound.first - 1);
-			if (new_sol.first != -1) {
-				upperbound = new_sol;
-			}
-			else
-			{
-				break;
-			}
-		}
-		auto best_red_degree_local = upperbound.first;
-		auto best_solution_local = upperbound.second;
-		best_solution = best_solution_local;
-		lower_bound_tl = 10 * 60;
-		LOWER_BOUND = get_lowerbound(cc, best_red_degree_local);
-		best_solution = best_solution_local;
-		best_red_degree = best_red_degree_local;
-		if (LOWER_BOUND != best_red_degree) {
-			if (LOWER_BOUND != best_red_degree) {
-				lower_bound_tl = 99999999;
-				max_clusters = components[cc].size();
-				branch_and_bound(cc);
+		act.upper_bound_operations = upperbound.second;
+		act.best_red_degree = upperbound.first;
+		global_degree = max( global_degree, upperbound.first);
+		conn.emplace_back(act);
+	}
+	/* Hill Climbing Upperbound */
+	lower_bound_tl = 5 * 60;
+	for ( int best_degree = global_degree - 1; best_degree >= 0 && getElapsed() < lower_bound_tl; -- best_degree )	{
+		for ( int cc = 0; cc < components.size() && getElapsed() < lower_bound_tl; ++ cc){
+			auto new_sol = find_heuristic_upper_bound(cc, conn[cc].upper_bound_operations, best_degree);
+			if ( new_sol.first != -1 )	{
+				conn[cc].upper_bound_operations = new_sol.second;
+				conn[cc].best_red_degree = min(conn[cc].best_red_degree, best_degree);
 			}
 		}
-		for (auto it : best_solution) {
+	}
+
+	/* Dynamic programming Lowerbound */
+	lower_bound_tl = 10 * 60;
+	for ( int cc = 0; cc < components.size() && getElapsed() < lower_bound_tl; ++ cc )	{
+		LOWER_BOUND = -1;
+		best_red_degree = conn[cc].best_red_degree;
+		best_solution = conn[cc].upper_bound_operations;
+		if ( conn[cc].best_red_degree >  global_lowerbound )	{
+			LOWER_BOUND = get_lowerbound(cc, conn[cc].best_red_degree);
+			conn[cc].lowerbound = LOWER_BOUND;
+			global_lowerbound = max(global_lowerbound, LOWER_BOUND);
+		}	
+	}
+
+
+	/* Dynamic programming solver */
+	lower_bound_tl = 1000 * 60;
+	for ( int cc = 0; cc < components.size(); ++ cc )	{
+		if (conn[cc].best_red_degree <= global_lowerbound)	{
+			continue;
+		}
+		best_solution = conn[cc].upper_bound_operations;
+	 	best_red_degree = conn[cc].best_red_degree;
+		branch_and_bound(cc);
+		conn[cc].upper_bound_operations = best_solution;
+	}
+
+
+	/* Link components */
+	for ( int cc = 0; cc < components.size(); ++ cc )	{
+		for ( auto it : conn[cc].upper_bound_operations )	{
 			best_solution_all_graph.emplace_back(it);
 		}
-		best_red_degree_all_graph = max(best_red_degree_all_graph, best_red_degree);
-
 		if (cc > 0) {
-			if (best_solution.empty()) {
+			if (conn[cc].upper_bound_operations .empty()) {
 				best_solution_all_graph.emplace_back(first_comp_representant, components[cc].back());
 
 			}
@@ -1355,12 +1379,12 @@ void solver() {
 		}
 		else
 		{
-			if (best_solution.empty()) {
+			if (conn[cc].upper_bound_operations .empty()) {
 				first_comp_representant = components[cc].back();
 			}
 			else
 			{
-				first_comp_representant = best_solution.back().first;
+				first_comp_representant = conn[cc].upper_bound_operations .back().first;
 			}
 		}
 	}
@@ -1370,18 +1394,10 @@ void solver() {
 
 
 signed main() {
-	//ios_base::sync_with_stdio(false);
-	//cin.tie();
-	//std::cout.tie();
 	begin_ = std::chrono::high_resolution_clock::now();
 	solver();
-	//cout << "Test no. " << testNo / 2 << '\n';
-	//cout << "Max degree: " << best_red_degree_all_graph << '\n';
-	//cout << "N: " << n << '\n';
-	//cout << best_solution_all_graph.size() << '\n';
 	for (auto it : best_solution_all_graph) {
 		cout << it.first << ' ' << it.second << '\n';
 	}
-	//cout << "Time: " << getElapsed() << " s\n";
 	return 0;
 }
