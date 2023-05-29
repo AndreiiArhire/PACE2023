@@ -1,7 +1,6 @@
 #pragma GCC optimize("Ofast")
 #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2,fma")
 #pragma GCC optimization("unroll-loops")
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -23,11 +22,12 @@ const int MOD2 = 100000037;
 const int PRIME2 = 10000079;
 
 std::chrono::time_point<std::chrono::high_resolution_clock> begin_;
+
 string s;
 vector<vector<int>>sorted_edges;
 vector<unordered_set<int>>red, black;
-vector<pair<int, int>> solution, best_solution, temp1, hashes, initial_solution;
-vector<int> paired, paired2, nodes, ordered_nodes, bestDegree, temp_vector, single_nodes, position, position2;
+vector<pair<int, int>> solution, best_solution,temp1, hashes,initial_solution;
+vector<int> paired, paired2, nodes, ordered_nodes,bestDegree, temp_vector, single_nodes, position, position2;
 unordered_set<int> neighbors, temp, nodes2, nodes_with_degree2, all_nodes;
 vector < pair < int, pair < int, int > > > choices;
 vector< vector< pair <int, int>> >node_hashes;
@@ -89,7 +89,7 @@ void init_data() {
 	paired.resize(n + 5, 0);
 	paired2.resize(n + 5, 0);
 	position.resize(n + 5, 0);
-	position2.resize(n + 5, (int)(1e9));
+	position2.resize(n + 5, 1e9);
 	hashes.resize(n + 5, make_pair(PRIME1, PRIME2));
 	for (int i = 1; i <= n; ++i) {
 		hashes[i].first = 1ll * hashes[i - 1].first * PRIME1 % MOD1;
@@ -118,7 +118,7 @@ inline int eval(int x, int y) {
 		swap(x, y);
 	}
 	int common_both_black = 0, common_mix = 0, common_both_red = 0;
-	int cnt_max = (int)(black[x].size() + red[x].size()), cnt1 = 0, cnt2 = 0;
+	int cnt_max = black[x].size() + red[x].size(), cnt1 = 0, cnt2 = 0;
 
 	for (auto it : black[x]) {
 		checkTime();
@@ -146,7 +146,7 @@ inline int eval(int x, int y) {
 		}
 		++cnt2;
 	}
-	return (int)(red[x].size() + black[x].size() + red[y].size() + black[y].size() - 2 * common_both_black - common_both_red - common_mix);
+	return red[x].size() + black[x].size() + red[y].size() + black[y].size() - 2 * common_both_black - common_both_red - common_mix;
 }
 vector<int> singletons;
 int solve2(int max_d, int max_edges) {
@@ -160,15 +160,15 @@ int solve2(int max_d, int max_edges) {
 		paired[i] = 0;
 		paired2[i] = 0;
 		nodes2.insert(i);
-		nodes_set.insert(1ll * ((1ll * black[i].size() << 28) + i));
+		nodes_set.insert(1ll*((1ll * black[i].size() << 28) + i));
 	}
 	while (!nodes_set.empty() && number_of_edges > max_edges) {
 		checkTime();
 		int x = 0;
 		x = 1ll * (*nodes_set.begin()) & ones;
 
-		if (red[x].size() + black[x].size() == 0) {
-			nodes_set.erase(1ll * ((1ll * (red[x].size() + black[x].size()) << 28) + 1ll * x));
+		if (  red[x].size() + black[x].size() == 0 )	{
+			nodes_set.erase( 1ll * ( (1ll * (red[x].size() + black[x].size()) << 28) + 1ll * x));
 			singletons.emplace_back(x);
 			continue;
 		}
@@ -201,7 +201,7 @@ int solve2(int max_d, int max_edges) {
 			auto it = nodes_set.begin();
 			++it;
 			best_node = 1ll * (*it) & ones;
-			best_degree = (int)((1ll * (*it) >> 28));
+			best_degree = (1ll * (*it) >> 28);
 		}
 
 		int best_nbr_score = eval(x, best_node), best_nbr = best_node;
@@ -241,8 +241,8 @@ int solve2(int max_d, int max_edges) {
 
 
 		int y = best_node;
-		nodes_set.erase(1ll * ((1ll * (red[best_node].size() + black[best_node].size()) << 28) + 1ll * best_node));
-		nodes_set.erase(1ll * (1ll * (red[x].size() + black[x].size()) << 28) + 1ll * x);
+		nodes_set.erase( 1ll * ( (1ll * (red[best_node].size() + black[best_node].size()) << 28) + 1ll * best_node));
+		nodes_set.erase(1ll * (1ll * (red[x].size() + black[x].size()) << 28) +1ll *  x);
 		if (red[x].size() < red[y].size()) {
 			swap(x, y);
 		}
@@ -258,13 +258,13 @@ int solve2(int max_d, int max_edges) {
 			if (red[x].count(it) || black[x].count(it)) {
 				--number_of_edges;
 			}
-			int val = (int)(red[it].size() + black[it].size());
+			unsigned val = red[it].size() + black[it].size();
 			red[it].erase(y);
 			red[x].insert(it);
 			red[it].insert(x);
 			if (red[it].size() + black[it].size() != val) {
-				nodes_set.erase(1ll * ((1ll * val << 28) + it));
-				nodes_set.insert(1ll * ((1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
+				nodes_set.erase( 1ll * ( (1ll * val << 28) + it));
+				nodes_set.insert( 1ll * ( (1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
 			}
 			max_degree = max(max_degree, (int)red[it].size());
 		}
@@ -275,13 +275,13 @@ int solve2(int max_d, int max_edges) {
 			}
 			else
 			{
-				int val = (int)(red[it].size() + black[it].size());
+				unsigned val = red[it].size() + black[it].size();
 				black[it].erase(x);
 				red[x].insert(it);
 				red[it].insert(x);
 				if (red[it].size() + black[it].size() != val) {
-					nodes_set.erase(1ll * ((1ll * val << 28) + it));
-					nodes_set.insert(1ll * ((1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
+				nodes_set.erase( 1ll * ( (1ll * val << 28) + it));
+				nodes_set.insert( 1ll * ( (1ll * (red[it].size() + black[it].size()) << 28) +1ll *  it));
 				}
 				max_degree = max(max_degree, (int)red[it].size());
 			}
@@ -290,7 +290,7 @@ int solve2(int max_d, int max_edges) {
 			if (red[x].count(it)) {
 				--number_of_edges;
 			}
-			int val = (int)(red[it].size() + black[it].size());
+			unsigned val = red[it].size() + black[it].size();
 			if (!temp.count(it)) {
 				red[x].insert(it);
 				red[it].insert(x);
@@ -298,8 +298,8 @@ int solve2(int max_d, int max_edges) {
 			}
 			black[it].erase(y);
 			if (red[it].size() + black[it].size() != val) {
-				nodes_set.erase(1ll * ((1ll * val << 28) + it));
-				nodes_set.insert(1ll * ((1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
+				nodes_set.erase( 1ll * ( (1ll * val << 28) + it));
+				nodes_set.insert( 1ll * ( (1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
 			}
 		}
 		black[x] = temp;
@@ -314,8 +314,8 @@ int solve2(int max_d, int max_edges) {
 			break;
 		}
 	}
-	for (int i = 1; i < singletons.size(); ++i) {
-		solution.emplace_back(singletons[0], singletons[i]);
+	for ( int i = 1 ; i < singletons.size(); ++ i )	{
+		solution.emplace_back(singletons[0],  singletons[i]);
 		nodes2.erase(singletons[i]);
 	}
 	singletons = vector<int>();
@@ -397,11 +397,11 @@ void solve1(int t, int its) {
 		++round;
 		int size = (int)nodes.size();
 		std::sort(nodes.begin(), nodes.end(), [](int i, int j) {return red[i].size() + black[i].size() > red[j].size() + black[j].size(); });
-		for (int i = (int)(nodes.size()) - 1; i - 1 >= 0 && (int)(red[nodes[i]].size() + black[nodes[i]].size()) == 0 && (int)(red[nodes[i - 1]].size() + black[nodes[i - 1]].size()) == 0; i -= 2) {
+		for (int i = nodes.size() - 1; i - 1 >= 0 && red[nodes[i]].size() + black[nodes[i]].size() == 0 && red[nodes[i - 1]].size() + black[nodes[i - 1]].size() == 0; i -= 2) {
 			choices.emplace_back(make_pair(0, make_pair(nodes[i], nodes[i - 1])));
 		}
 		checkTime();
-		mid_value = (int)(red[nodes[max(0, ((int)(nodes.size()) - 10000))]].size() + black[nodes[max(0, ((int)(nodes.size()) - 10000))]].size());
+		mid_value = red[nodes[max(0, ((int)(nodes.size()) - 10000))]].size() + black[nodes[max(0, ((int)(nodes.size()) - 10000))]].size();
 
 		for (auto it : nodes) {
 			checkTime();
@@ -456,7 +456,7 @@ void solve1(int t, int its) {
 					swap(x, y);
 				}
 				int common_both_black = 0, common_mix = 0, common_both_red = 0, edges_between = 0, max_red_degree = 0;
-				int cnt_max = (int)(black[x].size() + red[x].size());
+				int cnt_max = black[x].size() + red[x].size();
 				if (black[x].count(y) || red[x].count(y)) {
 					edges_between = 2;
 				}
@@ -614,10 +614,9 @@ void eliminate_duplicates() {
 
 	for (int i = 1; i <= n; ++i) {
 		all_nodes.insert(i);
-		if (black[i].empty()) {
-			nodes_hashes.emplace_back(make_pair(0, 0), i);
-		}
-		else {
+		if ( black[i].empty() )	{
+			nodes_hashes.emplace_back( make_pair(0, 0) , i);
+		}	else{
 			nodes_hashes.emplace_back(node_hashes[i].back(), i);
 		}
 	}
@@ -657,7 +656,7 @@ void eliminate_duplicates() {
 				continue;
 			}
 			// position of x in vector y
-			int st = 1, dr = (int)(sorted_edges[y].size()), mid, poz_x_in_y = -1, poz_y_in_x = -1;
+			int st = 1, dr = sorted_edges[y].size(), mid, poz_x_in_y = -1, poz_y_in_x = -1;
 			while (st <= dr) {
 				mid = (st + dr) / 2;
 				if (sorted_edges[y][mid - 1] <= x) {
@@ -672,7 +671,7 @@ void eliminate_duplicates() {
 				}
 			}
 			st = 1;
-			dr = (int)(sorted_edges[x].size());
+			dr = sorted_edges[x].size();
 			// position of y in vector x
 			while (st <= dr) {
 				mid = (st + dr) / 2;
@@ -750,7 +749,7 @@ void solver() {
 			solution.clear();
 			nodes_set = set < long long>();
 		}
-	}
+	}	
 	for (int t = 7; ; t += 3) {
 		checkTime();
 		solve1(t, t + 2);
