@@ -352,14 +352,14 @@ int lgp(int a, int b, int m) {
 }
 
 void readData() {
-	string path_input = ("tests//exact//exact_");
+	string path_input = ("tests//heuristic//heuristic_");
 	for (int l = 1; l <= 3 - to_string(testNo).size(); ++l) {
 		path_input.push_back('0');
 	}
 	path_input += to_string(testNo);
 	path_input += ".gr";
-	//ifstream in(path_input);
-	ios_base::sync_with_stdio(false);
+	ifstream in(path_input);
+	//ios_base::sync_with_stdio(false);
 	cin.tie();
 	string problem_id;
 	cin >> problem_id >> problem_id >> n >> m;
@@ -701,15 +701,20 @@ vector<pair < pair <int, int>, int>> nodes_hashes;
 vector<int> sorted_nbr;
 
 void eliminate_duplicates() {
+
 	for (int i = 1; i <= n; ++i) {
 		all_nodes.insert(i);
-		if (node_hashes[i].size() == 0 )	{
-			nodes_hashes.emplace_back(make_pair(0, 0), i);
+		if ( black[i].empty() )	{
+			nodes_hashes.emplace_back( make_pair(0, 0) , i);
 		}	else{
 			nodes_hashes.emplace_back(node_hashes[i].back(), i);
 		}
 	}
+
+
+
 	sort(nodes_hashes.begin(), nodes_hashes.end());
+
 	int cnt = 0, maxi = 0;
 	for (int i = 0; i < nodes_hashes.size();) {
 		int j = i + 1;
@@ -725,6 +730,7 @@ void eliminate_duplicates() {
 		}
 		i = j;
 	}
+
 	int cnt2 = 0;
 	for (int i = 1; i <= n; ++i) {
 		if (!all_nodes.count(i)) {
@@ -821,7 +827,7 @@ void eliminate_duplicates() {
 void solver() {
 	int  cnt = 0;
 	int maxN = 0;
-	for (testNo = 138; testNo <= 138; testNo += 2) {
+	for (testNo = 198; testNo <= 198; testNo += 2) {
 		readData();
 		int max_deg = 0;
 		for (int i = 1; i <= n; ++i) {
