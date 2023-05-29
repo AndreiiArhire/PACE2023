@@ -1374,7 +1374,7 @@ void solver() {
 			}
 			else
 			{
-				best_solution_all_graph.emplace_back(first_comp_representant, best_solution.back().first);
+				best_solution_all_graph.emplace_back(first_comp_representant, conn[cc].upper_bound_operations.back().first);
 			}
 		}
 		else
@@ -1389,8 +1389,6 @@ void solver() {
 		}
 	}
 }
-
-
 
 
 signed main() {
