@@ -1,6 +1,7 @@
 #pragma GCC optimize("Ofast")
 #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2,fma")
 #pragma GCC optimization("unroll-loops")
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -20,33 +21,19 @@ const int MOD1 = 100000007;
 const int PRIME1 = 10000019;
 const int MOD2 = 100000037;
 const int PRIME2 = 10000079;
-// python3 verifier.py tests//heuristic//heuristic_002.gr tests//heuristic//heuristic_.tww
+
 std::chrono::time_point<std::chrono::high_resolution_clock> begin_;
-
-vector<vector<int>>sorted_edges;
-vector<unordered_set<int>>red;
-vector<unordered_set<int>>black;
-vector<int> paired;
-vector<int> paired2;
 string s;
-vector<pair<int, int>> solution, best_solution;
-vector<int> nodes, ordered_nodes;
-unordered_set<int> neighbors, temp, nodes2, nodes_with_degree2;
+vector<vector<int>>sorted_edges;
+vector<unordered_set<int>>red, black;
+vector<pair<int, int>> solution, best_solution, temp1, hashes, initial_solution;
+vector<int> paired, paired2, nodes, ordered_nodes, bestDegree, temp_vector, single_nodes, position, position2;
+unordered_set<int> neighbors, temp, nodes2, nodes_with_degree2, all_nodes;
 vector < pair < int, pair < int, int > > > choices;
-set < long long > nodes_set;
-vector<int> bestDegree;
-int best_red_degree = (int)1e9, number_of_edges;
-vector<int>temp_vector;
-vector<int> single_nodes;
-vector<int> position;
-vector<int> position2;
-vector<  pair <int, int > > temp1;
-vector< pair <int, int> > hashes;
 vector< vector< pair <int, int>> >node_hashes;
-vector< pair <int, int> > initial_solution;
-unordered_set<int>all_nodes;
+set < long long > nodes_set;
+int best_red_degree = (int)1e9, number_of_edges, large_test;
 
-int large_test;
 double getElapsed() {
 	auto end = std::chrono::high_resolution_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin_);
@@ -70,7 +57,6 @@ void checkTime() {
 		}
 		best_solution = solution;
 		ios_base::sync_with_stdio(false);
-
 		cout.tie();
 		for (auto it : initial_solution) {
 			cout << it.first << ' ' << it.second << '\n';
@@ -84,7 +70,6 @@ void checkTime() {
 	if (sec >= SECONDS - 20) {
 		ios_base::sync_with_stdio(false);
 		cout.tie();
-
 		for (auto it : initial_solution) {
 			cout << it.first << ' ' << it.second << '\n';
 		}
@@ -104,7 +89,7 @@ void init_data() {
 	paired.resize(n + 5, 0);
 	paired2.resize(n + 5, 0);
 	position.resize(n + 5, 0);
-	position2.resize(n + 5, 1e9);
+	position2.resize(n + 5, (int)(1e9));
 	hashes.resize(n + 5, make_pair(PRIME1, PRIME2));
 	for (int i = 1; i <= n; ++i) {
 		hashes[i].first = 1ll * hashes[i - 1].first * PRIME1 % MOD1;
@@ -133,7 +118,7 @@ inline int eval(int x, int y) {
 		swap(x, y);
 	}
 	int common_both_black = 0, common_mix = 0, common_both_red = 0;
-	int cnt_max = black[x].size() + red[x].size(), cnt1 = 0, cnt2 = 0;
+	int cnt_max = (int)(black[x].size() + red[x].size()), cnt1 = 0, cnt2 = 0;
 
 	for (auto it : black[x]) {
 		checkTime();
@@ -161,7 +146,7 @@ inline int eval(int x, int y) {
 		}
 		++cnt2;
 	}
-	return red[x].size() + black[x].size() + red[y].size() + black[y].size() - 2 * common_both_black - common_both_red - common_mix;
+	return (int)(red[x].size() + black[x].size() + red[y].size() + black[y].size() - 2 * common_both_black - common_both_red - common_mix);
 }
 vector<int> singletons;
 int solve2(int max_d, int max_edges) {
@@ -175,15 +160,15 @@ int solve2(int max_d, int max_edges) {
 		paired[i] = 0;
 		paired2[i] = 0;
 		nodes2.insert(i);
-		nodes_set.insert(1ll*((1ll * black[i].size() << 28) + i));
+		nodes_set.insert(1ll * ((1ll * black[i].size() << 28) + i));
 	}
 	while (!nodes_set.empty() && number_of_edges > max_edges) {
 		checkTime();
 		int x = 0;
 		x = 1ll * (*nodes_set.begin()) & ones;
 
-		if (  red[x].size() + black[x].size() == 0 )	{
-			nodes_set.erase( 1ll * ( (1ll * (red[x].size() + black[x].size()) << 28) + 1ll * x));
+		if (red[x].size() + black[x].size() == 0) {
+			nodes_set.erase(1ll * ((1ll * (red[x].size() + black[x].size()) << 28) + 1ll * x));
 			singletons.emplace_back(x);
 			continue;
 		}
@@ -216,7 +201,7 @@ int solve2(int max_d, int max_edges) {
 			auto it = nodes_set.begin();
 			++it;
 			best_node = 1ll * (*it) & ones;
-			best_degree = (1ll * (*it) >> 28);
+			best_degree = (int)((1ll * (*it) >> 28));
 		}
 
 		int best_nbr_score = eval(x, best_node), best_nbr = best_node;
@@ -256,8 +241,8 @@ int solve2(int max_d, int max_edges) {
 
 
 		int y = best_node;
-		nodes_set.erase( 1ll * ( (1ll * (red[best_node].size() + black[best_node].size()) << 28) + 1ll * best_node));
-		nodes_set.erase(1ll * (1ll * (red[x].size() + black[x].size()) << 28) +1ll *  x);
+		nodes_set.erase(1ll * ((1ll * (red[best_node].size() + black[best_node].size()) << 28) + 1ll * best_node));
+		nodes_set.erase(1ll * (1ll * (red[x].size() + black[x].size()) << 28) + 1ll * x);
 		if (red[x].size() < red[y].size()) {
 			swap(x, y);
 		}
@@ -273,13 +258,13 @@ int solve2(int max_d, int max_edges) {
 			if (red[x].count(it) || black[x].count(it)) {
 				--number_of_edges;
 			}
-			unsigned val = red[it].size() + black[it].size();
+			int val = (int)(red[it].size() + black[it].size());
 			red[it].erase(y);
 			red[x].insert(it);
 			red[it].insert(x);
 			if (red[it].size() + black[it].size() != val) {
-				nodes_set.erase( 1ll * ( (1ll * val << 28) + it));
-				nodes_set.insert( 1ll * ( (1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
+				nodes_set.erase(1ll * ((1ll * val << 28) + it));
+				nodes_set.insert(1ll * ((1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
 			}
 			max_degree = max(max_degree, (int)red[it].size());
 		}
@@ -290,13 +275,13 @@ int solve2(int max_d, int max_edges) {
 			}
 			else
 			{
-				unsigned val = red[it].size() + black[it].size();
+				int val = (int)(red[it].size() + black[it].size());
 				black[it].erase(x);
 				red[x].insert(it);
 				red[it].insert(x);
 				if (red[it].size() + black[it].size() != val) {
-				nodes_set.erase( 1ll * ( (1ll * val << 28) + it));
-				nodes_set.insert( 1ll * ( (1ll * (red[it].size() + black[it].size()) << 28) +1ll *  it));
+					nodes_set.erase(1ll * ((1ll * val << 28) + it));
+					nodes_set.insert(1ll * ((1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
 				}
 				max_degree = max(max_degree, (int)red[it].size());
 			}
@@ -305,7 +290,7 @@ int solve2(int max_d, int max_edges) {
 			if (red[x].count(it)) {
 				--number_of_edges;
 			}
-			unsigned val = red[it].size() + black[it].size();
+			int val = (int)(red[it].size() + black[it].size());
 			if (!temp.count(it)) {
 				red[x].insert(it);
 				red[it].insert(x);
@@ -313,8 +298,8 @@ int solve2(int max_d, int max_edges) {
 			}
 			black[it].erase(y);
 			if (red[it].size() + black[it].size() != val) {
-				nodes_set.erase( 1ll * ( (1ll * val << 28) + it));
-				nodes_set.insert( 1ll * ( (1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
+				nodes_set.erase(1ll * ((1ll * val << 28) + it));
+				nodes_set.insert(1ll * ((1ll * (red[it].size() + black[it].size()) << 28) + 1ll * it));
 			}
 		}
 		black[x] = temp;
@@ -329,8 +314,8 @@ int solve2(int max_d, int max_edges) {
 			break;
 		}
 	}
-	for ( int i = 1 ; i < singletons.size(); ++ i )	{
-		solution.emplace_back(singletons[0],  singletons[i]);
+	for (int i = 1; i < singletons.size(); ++i) {
+		solution.emplace_back(singletons[0], singletons[i]);
 		nodes2.erase(singletons[i]);
 	}
 	singletons = vector<int>();
@@ -352,14 +337,7 @@ int lgp(int a, int b, int m) {
 }
 
 void readData() {
-	string path_input = ("tests//heuristic//heuristic_");
-	for (int l = 1; l <= 3 - to_string(testNo).size(); ++l) {
-		path_input.push_back('0');
-	}
-	path_input += to_string(testNo);
-	path_input += ".gr";
-	ifstream in(path_input);
-	//ios_base::sync_with_stdio(false);
+	ios_base::sync_with_stdio(false);
 	cin.tie();
 	string problem_id;
 	cin >> problem_id >> problem_id >> n >> m;
@@ -383,77 +361,9 @@ void readData() {
 			node_hashes[i][j] = ret;
 		}
 	}
-	//in.close();
 	if (n == 0) {
 		exit(0);
 	}
-}
-
-
-vector<pair <int, int >> init_sol;
-
-
-struct nod_dfs {
-	int nod = 0;
-	int vecin_id = 0;
-	vector<int> sons;
-	nod_dfs(int t1, int t2) {
-		nod = t1;
-		vecin_id = t2;
-	}
-};
-
-vector<nod_dfs>states;
-
-void dfs(int x) {
-	states.emplace_back(nod_dfs(x, 0));
-	for (; !states.empty();) {
-		auto nod = states.back().nod;
-		paired[nod] = 1;
-		bool go_dfs = 0;
-		for (int i = states.back().vecin_id; i < sorted_edges[nod].size(); ++i) {
-			auto it = sorted_edges[nod][i];
-			if (!paired[it]) {
-				states.back().vecin_id = i + 1;
-				states.back().sons.emplace_back(it);
-				states.emplace_back(nod_dfs(it, 0));
-				go_dfs = 1;
-				break;
-			}
-		}
-		if (go_dfs == 1) {
-			continue;
-		}
-		for (int j = 1; j < states.back().sons.size(); ++j) {
-			init_sol.emplace_back(states.back().sons[0], states.back().sons[j]);
-		}
-		if (!states.back().sons.empty()) {
-			init_sol.emplace_back(states.back().nod, states.back().sons[0]);
-		}
-		states.pop_back();
-	}
-}
-
-vector<int> all_nodes_init;
-
-void solve_like_a_tree() {
-	int best_deg = -1, best_nod = 0;
-	vector<int> roots;
-	for (auto it : all_nodes) {
-		all_nodes_init.emplace_back(it);
-		paired[it] = 0;
-	}
-	sort(all_nodes_init.begin(), all_nodes_init.end(), [](int i, int j) { return black[i].size() < black[j].size(); });
-	for (auto it : all_nodes_init) {
-		if (!paired[it]) {
-			roots.emplace_back(it);
-			dfs(it);
-		}
-	}
-	for (int i = 1; i < roots.size(); ++i) {
-		init_sol.emplace_back(roots[0], roots[i]);
-	}
-	best_solution = init_sol;
 }
 
 void solve1(int t, int its) {
@@ -487,11 +397,11 @@ void solve1(int t, int its) {
 		++round;
 		int size = (int)nodes.size();
 		std::sort(nodes.begin(), nodes.end(), [](int i, int j) {return red[i].size() + black[i].size() > red[j].size() + black[j].size(); });
-		for (int i = nodes.size() - 1; i - 1 >= 0 && red[nodes[i]].size() + black[nodes[i]].size() == 0 && red[nodes[i - 1]].size() + black[nodes[i - 1]].size() == 0; i -= 2) {
+		for (int i = (int)(nodes.size()) - 1; i - 1 >= 0 && (int)(red[nodes[i]].size() + black[nodes[i]].size()) == 0 && (int)(red[nodes[i - 1]].size() + black[nodes[i - 1]].size()) == 0; i -= 2) {
 			choices.emplace_back(make_pair(0, make_pair(nodes[i], nodes[i - 1])));
 		}
 		checkTime();
-		mid_value = red[nodes[max(0, ((int)(nodes.size()) - 10000))]].size() + black[nodes[max(0, ((int)(nodes.size()) - 10000))]].size();
+		mid_value = (int)(red[nodes[max(0, ((int)(nodes.size()) - 10000))]].size() + black[nodes[max(0, ((int)(nodes.size()) - 10000))]].size());
 
 		for (auto it : nodes) {
 			checkTime();
@@ -546,7 +456,7 @@ void solve1(int t, int its) {
 					swap(x, y);
 				}
 				int common_both_black = 0, common_mix = 0, common_both_red = 0, edges_between = 0, max_red_degree = 0;
-				int cnt_max = black[x].size() + red[x].size();
+				int cnt_max = (int)(black[x].size() + red[x].size());
 				if (black[x].count(y) || red[x].count(y)) {
 					edges_between = 2;
 				}
@@ -704,9 +614,10 @@ void eliminate_duplicates() {
 
 	for (int i = 1; i <= n; ++i) {
 		all_nodes.insert(i);
-		if ( black[i].empty() )	{
-			nodes_hashes.emplace_back( make_pair(0, 0) , i);
-		}	else{
+		if (black[i].empty()) {
+			nodes_hashes.emplace_back(make_pair(0, 0), i);
+		}
+		else {
 			nodes_hashes.emplace_back(node_hashes[i].back(), i);
 		}
 	}
@@ -745,8 +656,8 @@ void eliminate_duplicates() {
 			if (black[x].size() != black[y].size()) {
 				continue;
 			}
-			// pozitia lui x in vectorul lui y
-			int st = 1, dr = sorted_edges[y].size(), mid, poz_x_in_y = -1, poz_y_in_x = -1;
+			// position of x in vector y
+			int st = 1, dr = (int)(sorted_edges[y].size()), mid, poz_x_in_y = -1, poz_y_in_x = -1;
 			while (st <= dr) {
 				mid = (st + dr) / 2;
 				if (sorted_edges[y][mid - 1] <= x) {
@@ -761,8 +672,8 @@ void eliminate_duplicates() {
 				}
 			}
 			st = 1;
-			dr = sorted_edges[x].size();
-			// pozitia lui y in vectorul lui x
+			dr = (int)(sorted_edges[x].size());
+			// position of y in vector x
 			while (st <= dr) {
 				mid = (st + dr) / 2;
 				if (sorted_edges[x][mid - 1] <= y) {
@@ -823,95 +734,31 @@ void eliminate_duplicates() {
 
 }
 
-
 void solver() {
-	int  cnt = 0;
-	int maxN = 0;
-	for (testNo = 198; testNo <= 198; testNo += 2) {
-		readData();
-		int max_deg = 0;
-		for (int i = 1; i <= n; ++i) {
-			max_deg = max(max_deg, (int)black[i].size());
-		}
-		eliminate_duplicates();
-		large_test = 0;
-		if (max_deg < 2000) {
-			large_test = 1;
-			for (int t = 0; t <= 0; ++t) {
-				checkTime();
-				solve2(m + 1, 0);
-				solution.clear();
-				nodes_set = set < long long>();
-			}
-		}
-	
-		for (int t = 7; ; t += 3) {
+	readData();
+	int max_deg = 0;
+	for (int i = 1; i <= n; ++i) {
+		max_deg = max(max_deg, (int)black[i].size());
+	}
+	eliminate_duplicates();
+	large_test = 0;
+	if (max_deg < 2000) {
+		large_test = 1;
+		for (int t = 0; t <= 0; ++t) {
 			checkTime();
-			solve1(t, t + 2);
+			solve2(m + 1, 0);
+			solution.clear();
+			nodes_set = set < long long>();
 		}
-		
+	}
+	for (int t = 7; ; t += 3) {
+		checkTime();
+		solve1(t, t + 2);
 	}
 }
-
-
-void verify() {
-	for (auto i : all_nodes) {
-		black[i] = unordered_set<int>();
-		for (auto it : sorted_edges[i]) {
-			black[i].insert(it);
-		}
-		red[i] = unordered_set<int>();
-	}
-	int max_degree = 0;
-	temp.clear();
-	for (int i = 0; i < init_sol.size(); ++i) {
-		auto it = init_sol[i];
-		int x = it.first;
-		int y = it.second;
-		red[x].erase(y);
-		red[y].erase(x);
-		black[y].erase(x);
-		black[x].erase(y);
-		for (auto it : red[y]) {
-			red[it].erase(y);
-			red[x].insert(it);
-			red[it].insert(x);
-			max_degree = max(max_degree, (int)red[it].size());
-		}
-		for (auto it : black[x]) {
-			if (black[y].count(it)) {
-				temp.insert(it);
-			}
-			else
-			{
-				black[it].erase(x);
-				red[x].insert(it);
-				red[it].insert(x);
-				max_degree = max(max_degree, (int)red[it].size());
-			}
-		}
-		for (auto it : black[y]) {
-			if (!temp.count(it)) {
-				red[x].insert(it);
-				red[it].insert(x);
-				max_degree = max(max_degree, (int)red[it].size());
-			}
-			black[it].erase(y);
-		}
-		black[x] = temp;
-		red[y] = unordered_set<int>();
-		black[y] = unordered_set<int>();
-		max_degree = max(max_degree, (int)red[x].size());
-		nodes2.erase(y);
-		temp = unordered_set<int>();
-	}
-}
-
 
 signed main() {
-
 	begin_ = std::chrono::high_resolution_clock::now();
 	solver();
-	//verify();
 	return 0;
 }
