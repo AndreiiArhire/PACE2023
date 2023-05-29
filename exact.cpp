@@ -1,5 +1,3 @@
-/* EXACT */
-// TO DO te uiti in componente conexe si daca upperbound < max din alta componenta lasi asa 
 #pragma GCC optimize("Ofast")
 #pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2,fma")
 #pragma GCC optimization("unroll-loops")
@@ -63,7 +61,7 @@ vector<int>temp_vector;
 vector<  pair <int, int > > temp1;
 vector< pair <int, int> > hashes;
 vector<vector<char>>adjacency;
-int STEP, LOWER_BOUND = -1, SW = 0;
+int STEP, LOWER_BOUND = -1;
 struct partial_solution_hash {
 	vector < pair <int, int> > node_pairs;
 	int max_red_degree = 0;
@@ -551,14 +549,11 @@ pair <int, int> get_solution_hash(const int& hash_id, const int& step, const pai
 	return ret;
 }
 
-int max_clusters;
-unordered_set <int> clusters;
 unordered_set<int> nodes_left;
 
 
 int build_graph_from_hash(const int& cc, const int& hash_id, const int& step) {
 	int to_be_continued = 1;
-	clusters = unordered_set <int>();
 	for (auto i : components[cc]) {
 		black[i] = edges[i];
 		red[i] = unordered_set<int>();
@@ -566,28 +561,17 @@ int build_graph_from_hash(const int& cc, const int& hash_id, const int& step) {
 	}
 	for (auto node_pair : current_hash_solutions[step][hash_id].node_pairs) {
 		merge_nodes(node_pair);
-		clusters.insert(node_pair.first);
-		clusters.erase(node_pair.second);
 		nodes_left.erase(node_pair.second);
 	}
-	if (clusters.size() > max_clusters) {
-		clusters = unordered_set <int>();
-		to_be_continued = 0;
-		return to_be_continued;
-	}
-	if (SW == 1) {
-		if (nodes_left.size() == 0) {
-			if (current_hash_solutions[step][hash_id].max_red_degree < best_red_degree) {
-				best_red_degree = current_hash_solutions[step][hash_id].max_red_degree;
-				best_solution.clear();
-				for (auto it : current_hash_solutions[step][hash_id].node_pairs) {
-					best_solution.emplace_back(it);
-				}
-			}
-		}
-		return 1;
-	}
 	ckeck_force_stop();
+
+	if (current_hash_solutions[step][hash_id].node_pairs.size() == components[cc].size()
+	 && current_hash_solutions[step][hash_id].max_red_degree <  best_red_degree)	{
+		best_red_degree = current_hash_solutions[step][hash_id].max_red_degree ;
+		best_solution = current_hash_solutions[step][hash_id].node_pairs;
+		return 0;
+	}
+
 	nodes_left = unordered_set <int>();
 	pair < int, vector<pair <int, int>> > ret = make_pair(1e9, vector<pair<int, int>>());
 	if ((LOWER_BOUND == -1 && current_hash_solutions[step][hash_id].max_red_degree >= best_red_degree - 1 /* && STEP >= 2*/) || (LOWER_BOUND != -1 && current_hash_solutions[step][hash_id].max_red_degree >= LOWER_BOUND)) {
@@ -778,12 +762,6 @@ void branch_and_bound(int cc) {
 	ckeck_force_stop();
 	for (char step = 0; !current_hash_solutions[step].empty() && best_red_degree > LOWER_BOUND; step ^= 1, ++STEP) {
 		ckeck_force_stop();
-		if (SW == 1) {
-			sort(current_hash_solutions[step].begin(), current_hash_solutions[step].end(), [](partial_solution_hash i, partial_solution_hash j) { return i.max_red_degree < j.max_red_degree || (i.max_red_degree == j.max_red_degree && i.number_of_red_edges < j.number_of_red_edges) || (i.max_red_degree == j.max_red_degree && i.number_of_red_edges == j.number_of_red_edges && i.node_pairs < j.node_pairs); });
-			while (current_hash_solutions[step].size() > 1000) {
-				current_hash_solutions[step].pop_back();
-			}
-		}
 
 		for (int hash_id = 0; hash_id < current_hash_solutions[step].size() && best_red_degree > LOWER_BOUND; ++hash_id) {
 			auto solution_hash = current_hash_solutions[step][hash_id];
@@ -1032,7 +1010,6 @@ int get_lowerbound(int cc, int stop) {
 			}
 			best_red_degree = local_upper_bound;
 			best_solution = rr.second;
-			max_clusters = (int)components[cc].size();
 			branch_and_bound(cc);
 			if (getElapsed() > lower_bound_tl) {
 				break;
