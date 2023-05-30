@@ -16,9 +16,9 @@ For the input and output format, please refer to the [PACE challenge web page](h
 
 To compile and run, use the following commands:
 
-    g++ heuristic.cpp -o heuristic
+    g++ -o heuristic -static heuristic.cpp 
     ./heuristic
     
-    g++ exact.cpp -o exact
+    g++ -o exact -static exact.cpp 
     ./exact
 
