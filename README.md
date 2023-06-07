@@ -2,6 +2,9 @@
  Twin-width is a graph-theoretic invariant defined in terms of contractions on trigraphs.  
  This repository provides an exact and heuristic solver for the twin-width problem.
  
+ - Exact Solver ([PDF][exact_description])
+ - Heuristic Solver ([PDF][heuristic_description])
+
 Requirements
 -----------
 
@@ -22,3 +25,5 @@ To compile and run, use the following commands:
     g++ -o exact -static exact.cpp 
     ./exact
 
+[heuristic_description]: https://andrei-arhire.web.app/assets/UAIC_Twin_Width__A_Heuristic_Twin_Width_Algorithm.pdf "Heuristic Solver Description"
+[exact_description]: https://andrei-arhire.web.app/assets/UAIC_Twin_Width__An_Exact_Twin_Width_Algorithm.pdf "Exact Solver Description"
