@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: UAIC_Twin_Width
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Andrei
+    family-names: Arhire
+    email: andreiarhire2708@gmail.com
+    affiliation: UAIC
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.8010483
+  - type: doi
+    value: 10.5281/zenodo.8010510
+repository-code: 'https://github.com/AndreiiArhire/PACE2023'
+abstract: >+
+  This repository provides an exact and heuristic solver for
+  the twin-width problem.
+
+license: MIT
